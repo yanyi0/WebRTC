@@ -1,0 +1,22 @@
+{
+  "dependencies": {
+    "chokidar": "^3.5.3",
+    "resolve-url": "^0.2.1",
+    "source-map-resolve": "^0.5.3",
+    "source-map-url": "^0.4.1",
+    "urix": "^0.1.0",
+    "uuid": "^8.3.2"
+  },
+  "name": "6.4",
+  "version": "1.0.0",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "type": "module"
+}
