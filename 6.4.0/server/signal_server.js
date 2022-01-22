@@ -287,8 +287,12 @@ var server = ws.createServer(function(conn){
     conn.client = null;//对应的客户端信息
     // conn.sendText("我收到你的连接了......");
     conn.on("text",function(str){
-    // console.info("recv msg:" + str);
+    console.info("recv msg:" + str);
        var jsonMsg = JSON.parse(str);
+       if(jsonMsg.type == 'ping'){
+           console.log("--------收到心跳了！-------"+jsonMsg.type)
+           return;
+       }
        switch(jsonMsg.cmd){
            case SIGNAL_TYPE_JOIN:
                conn.client = handleJoin(jsonMsg,conn);
