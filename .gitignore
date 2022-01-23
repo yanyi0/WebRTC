@@ -1,6 +1,6 @@
-# dependencies
+#dependencies
 *node_modules/
-
+/6.4/server/nohup.out
 # testing
 /coverage
 

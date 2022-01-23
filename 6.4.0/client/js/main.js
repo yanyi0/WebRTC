@@ -20,6 +20,9 @@ const SIGNAL_TYPE_OFFER = "offer";
 const SIGNAL_TYPE_ANSWER = "answer";
 const SIGNAL_TYPE_CANDIDATE = "candidate";
 
+const IP_URL = "172.30.30.10"
+const SERVER_URL = "wss://"+IP_URL + ":8098/ws";
+
 var localUserId = Math.random().toString(36).substr(2); //本地uid
 var remoteUserId = -1; //对端uid
 var roomId = 0;
@@ -80,14 +83,14 @@ function createPeerConnection() {
     iceServers: [
       {
         urls: [
-          "turn:172.30.30.10:3478?transport=udp",
-          "turn:172.30.30.10:3478?transport=tcp", // 可以插入多个进行备选
+          "turn:"+IP_URL+":3478?transport=udp",
+          "turn:"+IP_URL+":3478?transport=tcp", // 可以插入多个进行备选
         ],
         username: "ydy",
         credential: "123456",
       },
       {
-        urls: ["stun:172.30.30.10:3478"],
+        urls: ["stun:"+IP_URL+":3478"],
       },
     ],
   };
@@ -162,11 +165,16 @@ FishRTCEngine.prototype.createWebSocket = function () {
     fishRTCEngine = this;
     console.info("this.wsUrl: "+this.wsUrl);
     fishRTCEngine.signaling = new WebSocket(this.wsUrl);
-
     fishRTCEngine.signaling.onopen = function () {
+      fishRTCEngine.timer = window.setInterval(function(){
+        console.info("进入心跳");
+        var ping = {"type":"ping"};
+        console.info("发送心跳");
+        fishRTCEngine.signaling.send(JSON.stringify(ping));
+      },5000);
+      console.info("发送连接");
       fishRTCEngine.onOpen();
     };
-  
     fishRTCEngine.signaling.onmessage = function (ev) {
       fishRTCEngine.onMessage(ev);
     };
@@ -181,19 +189,17 @@ FishRTCEngine.prototype.createWebSocket = function () {
 };
 
 FishRTCEngine.prototype.onOpen = function () {
-  heartCheck.reset().start();
+  // heartCheck.reset().start();
   console.log("websocket open"+new Date().toLocaleString());
 };
 
 FishRTCEngine.prototype.onMessage = function (event) {
-  heartCheck.reset().start();//收到任何消息说明当前连接是正常的
-  // console.info("websocket onMessage:");
+  // heartCheck.reset().start();//收到任何消息说明当前连接是正常的
   console.log("websocket onMessage:" + event.data);
   var jsonMsg = null;
   try {
-    if(event.data != 'pong'){
       jsonMsg = JSON.parse(event.data);
-    }
+      if(jsonMsg == 'pong') return;
   } catch (e) {
     console.warn("onMessage parse Json failed: " + e);
     return;
@@ -355,9 +361,20 @@ function initLocalStream() {
       alert("getUserMedia() error" + e.name);
     });
 }
+// fishRTCEngine = new FishRTCEngine(SERVER_URL);
+// fishRTCEngine.createWebSocket();
+createWebSocketConnection(SERVER_URL);
+function createWebSocketConnection(url){
+  try{
+    fishRTCEngine = new FishRTCEngine(url);
+    fishRTCEngine.createWebSocket();
+  }catch(e){
+    reconnect(url);
+    console.log(e);
+  }
 
-fishRTCEngine = new FishRTCEngine("wss://172.30.30.10:8098/ws");
-fishRTCEngine.createWebSocket();
+}
+
 document.getElementById("joinBtn").onclick = function () {
   roomId = document.getElementById("zero-RoomId").value;
   if (roomId == "" || roomId == "请输入房间ID") {
@@ -374,6 +391,7 @@ document.getElementById("leaveBtn").onclick = function () {
   doLeave();
 };
 function reconnect(url){
+  console.info("重新连接:url: "+url);
   if(lockReconnect) return;
   lockReconnect = true;
   setTimeout(function(){//没连上会一直重连，设置延迟避免请求过多
@@ -383,7 +401,7 @@ function reconnect(url){
 }
 //心跳检测
 var heartCheck = {
-    timeout:1000,//一分钟发一次心跳
+    timeout:5000,//一分钟发一次心跳
     timeoutObj:null,
     serverTimeoutObj:null,
     reset:function(){
@@ -402,6 +420,7 @@ var heartCheck = {
       self.serverTimeoutObj = setTimeout(function(){
         //如果超过一定时间还没重置，说明后端主动断开了
         //如果onclose会执行reconnect，我们执行ws。close()就行了，如果直接执行reconnect 会触发onclose导致重连两次
+        console.log('心跳内部关闭连接');
         fishRTCEngine.signaling.close();
       },self.timeout)
       },this.timeout);
