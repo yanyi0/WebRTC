@@ -20,7 +20,7 @@ const SIGNAL_TYPE_OFFER = "offer";
 const SIGNAL_TYPE_ANSWER = "answer";
 const SIGNAL_TYPE_CANDIDATE = "candidate";
 
-const IP_URL = "172.30.30.10"
+const IP_URL = "192.168.1.103"
 const SERVER_URL = "wss://"+IP_URL + ":8098/ws";
 
 var localUserId = Math.random().toString(36).substr(2); //本地uid
@@ -166,12 +166,12 @@ FishRTCEngine.prototype.createWebSocket = function () {
     console.info("this.wsUrl: "+this.wsUrl);
     fishRTCEngine.signaling = new WebSocket(this.wsUrl);
     fishRTCEngine.signaling.onopen = function () {
-      fishRTCEngine.timer = window.setInterval(function(){
-        console.info("进入心跳");
-        var ping = {"type":"ping"};
-        console.info("发送心跳");
-        fishRTCEngine.signaling.send(JSON.stringify(ping));
-      },5000);
+      // fishRTCEngine.timer = window.setInterval(function(){
+      //   console.info("进入心跳");
+      //   var ping = {"type":"ping"};
+      //   console.info("发送心跳");
+      //   fishRTCEngine.signaling.send(JSON.stringify(ping));
+      // },5000);
       console.info("发送连接");
       fishRTCEngine.onOpen();
     };

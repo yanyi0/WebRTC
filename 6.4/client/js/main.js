@@ -16,6 +16,9 @@ const SIGNAL_TYPE_OFFER = "offer";
 const SIGNAL_TYPE_ANSWER = "answer";
 const SIGNAL_TYPE_CANDIDATE = "candidate";
 
+const IP_URL = "192.168.1.103"
+const SERVER_URL = "wss://"+IP_URL + ":8098/ws";
+
 var localUserId = Math.random().toString(36).substr(2); //本地uid
 var remoteUserId = -1; //对端uid
 var roomId = 0;
@@ -74,14 +77,14 @@ function createPeerConnection() {
     iceServers: [
       {
         urls: [
-          "turn:192.168.1.102:3478?transport=udp",
-          "turn:192.168.1.102:3478?transport=tcp", // 可以插入多个进行备选
+          "turn:"+IP_URL+":3478?transport=udp",
+          "turn:"+IP_URL+":3478?transport=tcp", // 可以插入多个进行备选
         ],
         username: "ydy",
         credential: "123456",
       },
       {
-        urls: ["stun:192.168.1.102:3478"],
+        urls: ["stun:"+IP_URL+":3478"],
       },
     ],
   };
@@ -342,7 +345,7 @@ function initLocalStream() {
     });
 }
 
-fishRTCEngine = new FishRTCEngine("wss://192.168.1.102:8098/ws");
+fishRTCEngine = new FishRTCEngine(SERVER_URL);
 fishRTCEngine.createWebSocket();
 document.getElementById("joinBtn").onclick = function () {
   roomId = document.getElementById("zero-RoomId").value;
